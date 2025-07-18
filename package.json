@@ -1,0 +1,35 @@
+{
+  "name": "devkitsudo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "prepare": "husky install"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "inquirer": "^12.7.0",
+    "ora": "^8.2.0",
+    "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.31.0",
+    "@types/chalk": "^0.4.31",
+    "@types/inquirer": "^9.0.8",
+    "@types/node": "^24.0.14",
+    "@types/ora": "^3.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.37.0",
+    "@typescript-eslint/parser": "^8.37.0",
+    "eslint": "^9.31.0",
+    "globals": "^16.3.0",
+    "typescript-eslint": "^8.37.0"
+  }
+}
