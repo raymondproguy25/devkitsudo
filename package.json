@@ -11,8 +11,8 @@
     "prepare": "husky install"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Raymond Pro Guy",
+  "license": "MIT",
   "description": "",
   "dependencies": {
     "chalk": "^5.4.1",
