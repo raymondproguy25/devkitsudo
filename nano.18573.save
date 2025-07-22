@@ -1,0 +1,168 @@
+#!/bin/bashq
+
+# ======================================
+# DevKitSudo CLI Prompt System Setup
+# ======================================
+
+echo "🛠️  Setting up CLI prompt system..."
+
+# Navigate to project root
+cd ~/devkitsudo || { echo "❌ Project directory not found"; exit 1; }
+
+# --------------------------------------------------
+# 1. Install Inquirer.js and type definitions
+# --------------------------------------------------
+echo "📦 Adding Inquirer.js dependencies..."
+npm install inquirer @types/inquirer --save
+
+# --------------------------------------------------
+# 2. Create CLI prompt system
+# --------------------------------------------------
+echo "💻 Creating prompt system files..."
+
+# Main prompts file
+cat > src/cli/prompts.ts << 'EOL'
+import inquirer from 'inquirer';
+import chalk from 'chalk';
+
+interface ProjectOptions {
+  projectName: string;
+  description: string;
+  author: string;
+  templateType: 'basic' | 'advanced' | 'custom';
+  license: string;
+}
+
+export async function getProjectOptions(): Promise<ProjectOptions> {
+  console.log(chalk.blue.bold('\nDevKitSudo Project Setup\n'));
+  
+  const questions: inquirer.QuestionCollection = [
+    {
+      type: 'input',
+      name: 'projectName',
+      message: 'Project name:',
+      validate: (input: string) => 
+        /^[a-z0-9-]+$/i.test(input) || 
+        chalk.red('Name must be alphanumeric with hyphens only')
+    },
+    {
+      type: 'input',
+      name: 'description',
+      message: 'Project description:',
+      validate: (input: string) =>
+        input.trim().length > 0 ||
+        chalk.red('Description cannot be empty')
+    },
+    {
+      type: 'input',
+      name: 'author',
+      message: 'Author:',
+      default: () => {
+        try {
+          return require('os').userInfo().username;
+        } catch {
+          return '';
+        }
+      }
+    },
+    {
+      type: 'list',
+      name: 'templateType',
+      message: 'Template type:',
+      choices: [
+        { name: chalk.blue('Basic (HTML/CSS/JS)'), value: 'basic' },
+        { name: chalk.magenta('Advanced (React/Vite)'), value: 'advanced' },
+        { name: chalk.green('Custom (Your own setup)'), value: 'custom' }
+      ]
+    },
+    {
+      type: 'list',
+      name: 'license',
+      message: 'License:',
+      choices: [
+        { name: chalk.gray('MIT'), value: 'MIT' },
+        { name: chalk.gray('Apache-2.0'), value: 'Apache-2.0' },
+        { name: chalk.gray('GPL-3.0'), value: 'GPL-3.0' },
+        { name: chalk.red('None'), value: 'none' }
+      ],
+      default: 'MIT'
+    }
+  ];
+
+  return inquirer.prompt<ProjectOptions>(questions);
+}
+EOL
+
+# --------------------------------------------------
+# 3. Enhance CLI interface
+# --------------------------------------------------
+echo "🎨 Improving CLI output formatting..."
+
+cat > src/cli/interface.ts << 'EOL'
+import chalk from 'chalk';
+
+export function showWelcomeMessage() {
+  console.log(chalk.green.bold(`
+  ██████╗ ███████╗██╗   ██╗██╗  ██╗██╗████████╗███████╗██╗   ██╗██████╗  ██████╗ 
+  ██╔══██╗██╔════╝██║   ██║██║ ██╔╝██║╚══██╔══╝██╔════╝██║   ██║██╔══██╗██╔═══██╗
+  ██║  ██║█████╗  ██║   ██║█████╔╝ ██║   ██║   █████╗  ██║   ██║██║  ██║██║   ██║
+  ██║  ██║██╔══╝  ╚██╗ ██╔╝██╔═██╗ ██║   ██║   ██╔══╝  ██║   ██║██║  ██║██║   ██║
+  ██████╔╝███████╗ ╚████╔╝ ██║  ██╗██║   ██║   ███████╗╚██████╔╝██████╔╝╚██████╔╝
+  ╚═════╝ ╚══════╝  ╚═══╝  ╚═╝  ╚═╝╚═╝   ╚═╝   ╚══════╝ ╚═════╝ ╚═════╝  ╚═════╝ 
+  `));
+  console.log(chalk.blue('A powerful project scaffolding tool\n'));
+}
+
+export function showSuccess(message: string) {
+  console.log(chalk.green(`✓ ${message}`));
+}
+
+export function showError(message: string, details?: string) {
+  console.error(chalk.red(`✗ ${message}`));
+  if (details) console.error(chalk.gray(details));
+}
+
+export function showWarning(message: string) {
+  console.warn(chalk.yellow(`⚠ ${message}`));
+}
+EOL
+
+# --------------------------------------------------
+# 4. Update main entry point
+# --------------------------------------------------
+echo "🔧 Updating main application entry..."
+
+cat > src/index.ts << 'EOL'
+#!/usr/bin/env node
+import { showWelcomeMessage, showError } from './cli/interface';
+import { getProjectOptions } from './cli/prompts';
+
+async function main() {
+  try {
+    showWelcomeMessage();
+    const options = await getProjectOptions();
+    console.log('\nSelected options:', options);
+    // TODO: Add template generation here
+  } catch (error) {
+    showError('Failed to run DevKitSudo', error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  }
+}
+
+main();
+EOL
+
+# --------------------------------------------------
+# 5. Finalize setup
+# --------------------------------------------------
+echo "🔐 Setting executable permissions..."
+chmod +x src/index.ts
+
+echo "💾 Committing changes..."
+git add .
+git commit -m "Implement CLI prompt system with Inquirer.js" --quiet
+
+echo -e "\n✅ ${bold_green}CLI prompt system setup complete!${reset}"
+echo -e "\nTest it with:"
+echo -e "  cd ~/devkitsudo"
+echo -e "  npm run build && node dist/index.js\n"
